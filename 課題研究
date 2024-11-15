@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>出席管理システム</title>
+    <style>
+        body {
+            font-family: 'Helvetica', sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+        }
+        .section {
+            margin-bottom: 20px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .output {
+            white-space: pre-wrap;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-top: 10px;
+        }
+        .red {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>出席管理システム</h1>
+        
+        <div class="section">
+            <h2>学生情報の登録</h2>
+            <label>学生番号:</label>
+            <input type="text" id="studentNumber"><br>
+            <label>学生名:</label>
+            <input type="text" id="studentName"><br>
+            <label>学年:</label>
+            <input type="text" id="grade"><br>
+            <label>クラス:</label>
+            <input type="text" id="className"><br>
+            <button onclick="registerStudent()">学生登録</button>
+            <button onclick="showStudentList()">登録生徒一覧</button>
+        </div>
+
+        <div class="section">
+            <h2>出席情報の登録</h2>
+            <label>生徒番号を入力:</label>
+            <input type="text" id="attendanceNumber"><br>
+            <button onclick="markAttendance()">出席登録</button>
+            <button onclick="markAbsence()">欠席登録</button>
+            <button onclick="markLate()">遅刻登録</button>
+            <button onclick="showAttendance()">出席状況表示</button>
+        </div>
+
+        <div id="output" class="output"></div>
+    </div>
+
+    <script>
+        const students = {};
+        const attendance = {};
+
+        function registerStudent() {
+            const studentNumber = document.getElementById('studentNumber').value;
+            const studentName = document.getElementById('studentName').value;
+            const grade = document.getElementById('grade').value;
+            const className = document.getElementById('className').value;
+
+            if (studentNumber in students) {
+                alert("この学生番号は既に登録されています。");
+            } else if (!studentNumber || !studentName || !grade || !className) {
+                alert("学生番号、名前、学年、クラスはすべて入力してください。");
+            } else {
+                students[studentNumber] = { name: studentName, grade: grade, className: className };
+                alert(`${studentName} さん（番号: ${studentNumber}）が登録されました。`);
+            }
+
+            // 入力フィールドをクリア
+            document.getElementById('studentNumber').value = '';
+            document.getElementById('studentName').value = '';
+            document.getElementById('grade').value = '';
+            document.getElementById('className').value = '';
+        }
+
+        function markAttendance() {
+            const studentNumber = document.getElementById('attendanceNumber').value;
+            if (studentNumber in students) {
+                const currentTime = new Date().toLocaleString();
+                attendance[studentNumber] = { status: '出席', time: currentTime, ...students[studentNumber] };
+                alert(`${students[studentNumber].name} さんが出席としてマークされました。\n出席時間: ${currentTime}`);
+            } else {
+                alert("該当する生徒番号がありません。");
+            }
+            document.getElementById('attendanceNumber').value = '';
+        }
+
+        function markAbsence() {
+            const studentNumber = document.getElementById('attendanceNumber').value;
+            if (studentNumber in students) {
+                const currentTime = new Date().toLocaleString();
+                attendance[studentNumber] = { status: '欠席', time: currentTime, ...students[studentNumber] };
+                alert(`${students[studentNumber].name} さんが欠席としてマークされました。\n欠席時間: ${currentTime}`);
+            } else {
+                alert("該当する生徒番号がありません。");
+            }
+            document.getElementById('attendanceNumber').value = '';
+        }
+
+        function markLate() {
+            const studentNumber = document.getElementById('attendanceNumber').value;
+            if (studentNumber in students) {
+                const currentTime = new Date().toLocaleString();
+                attendance[studentNumber] = { status: '遅刻', time: currentTime, ...students[studentNumber] };
+                alert(`${students[studentNumber].name} さんが遅刻としてマークされました。\n遅刻時間: ${currentTime}`);
+            } else {
+                alert("該当する生徒番号がありません。");
+            }
+            document.getElementById('attendanceNumber').value = '';
+        }
+
+        function showStudentList() {
+            let studentList = '';
+            for (const studentNumber in students) {
+                const student = students[studentNumber];
+                studentList += `番号: ${studentNumber}, 名前: ${student.name}, 学年: ${student.grade}, クラス: ${student.className}\n`;
+            }
+            if (!studentList) {
+                studentList = '登録された生徒はありません。';
+            }
+            document.getElementById('output').innerText = studentList;
+        }
+
+        function showAttendance() {
+            let output = '';
+            for (const studentNumber in students) {
+                if (studentNumber in attendance) {
+                    const record = attendance[studentNumber];
+                    output += `${record.name}（番号: ${studentNumber}, 学年: ${record.grade}, クラス: ${record.className}） - ${record.status} (${record.time})\n`;
+                } else {
+                    output += `${students[studentNumber].name}（番号: ${studentNumber}, 学年: ${students[studentNumber].grade}, クラス: ${students[studentNumber].className}） - 出席していません\n`;
+                }
+            }
+            if (!output) {
+                output = 'まだ出席はありません。';
+            }
+            document.getElementById('output').innerText = output;
+        }
+    </script>
+</body>
+</html>
